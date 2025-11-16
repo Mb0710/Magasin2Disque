@@ -1,13 +1,25 @@
 package com.saf.magasin.controller;
 
-import com.saf.magasin.model.Disque;
-import com.saf.magasin.service.DisqueService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.saf.magasin.model.Disque;
+import com.saf.magasin.model.User;
+import com.saf.magasin.service.DisqueService;
+import com.saf.magasin.service.UserService;
 
 @RestController
 @RequestMapping("/api/disques")
@@ -16,6 +28,9 @@ public class DisqueController {
     
     @Autowired
     private DisqueService disqueService;
+
+    @Autowired
+    private UserService userService;
     
     @GetMapping
     public ResponseEntity<List<Disque>> getAllDisques() {
@@ -42,6 +57,18 @@ public class DisqueController {
     @PostMapping
     public ResponseEntity<?> createDisque(@RequestBody Disque disque) {
         try {
+            // Vérifier et attacher le vendeur via UserService pour éviter l'erreur de valeur transiente
+            final Long vendeurId = disque.getVendeurId();
+
+            if (vendeurId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Le champ 'vendeurId' est requis."));
+            }
+
+            User vendeur = userService.findById(vendeurId)
+                .orElseThrow(() -> new RuntimeException("Vendeur introuvable (id=" + vendeurId + ")"));
+
+            disque.setVendeur(vendeur);
+
             Disque created = disqueService.createDisque(disque);
             return ResponseEntity.ok(Map.of(
                 "message", "Disque créé avec succès",
@@ -57,7 +84,7 @@ public class DisqueController {
         return disqueService.getDisqueById(id)
             .map(existing -> {
                 disque.setId(id);
-                Disque updated = disqueService.updateDisque(disque);
+                disqueService.updateDisque(disque);
                 return ResponseEntity.ok(Map.of("message", "Disque mis à jour"));
             })
             .orElse(ResponseEntity.notFound().build());

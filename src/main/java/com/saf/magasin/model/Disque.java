@@ -3,6 +3,10 @@ package com.saf.magasin.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Entité JPA représentant un disque dans le catalogue du magasin.
@@ -68,7 +73,13 @@ public class Disque {
     /** Référence au vendeur du disque (relation ManyToOne) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendeur_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private User vendeur;
+
+    // Champ transitoire utilisé pour (dé)sérialisation JSON : frontend envoie `vendeurId: 1`
+    @Transient
+    private Long vendeurId;
     
     /** Date de création du disque dans la base de données */
     @Column(name = "created_at")
@@ -219,6 +230,16 @@ public class Disque {
      * @param vendeur Le nouvel utilisateur vendeur
      */
     public void setVendeur(User vendeur) { this.vendeur = vendeur; }
+
+    /**
+     * Fournit l'id du vendeur pour les réponses JSON (évite la sérialisation complète de l'entité User).
+     * @return id du vendeur ou null
+     */
+    @JsonProperty("vendeurId")
+    public Long getVendeurId() { return (vendeurId != null) ? vendeurId : (vendeur != null ? vendeur.getId() : null); }
+
+    @JsonProperty("vendeurId")
+    public void setVendeurId(Long id) { this.vendeurId = id; }
     
     /**
      * Récupère la date de création du disque.

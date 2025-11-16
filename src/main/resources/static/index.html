@@ -115,6 +115,7 @@
         <div class="nav-right">
             <span class="user-info" id="user-info">Bienvenue!</span>
             <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+            <button class="btn btn-secondary" onclick="location.href='/create_disque.html'">Vendre un disque</button>
         </div>
     </nav>
 
@@ -145,22 +146,48 @@
             localStorage.removeItem('role');
             window.location.href = '/login.html';
         }
+        function goToDisque(id) {
+            window.location.href = `disque.html?id=${id}`;
+        }
+
 
         // Charger les disques
         async function loadDisques() {
             try {
                 const response = await fetch('/api/disques');
-                const disques = await response.json();
-                
+                const data = await response.json();
+
                 const grid = document.getElementById('disques-grid');
-                
-                if (disques.length === 0) {
+
+                // Normaliser la réponse en tableau
+                let disques = [];
+                if (Array.isArray(data)) {
+                    disques = data;
+                } else if (data && Array.isArray(data.content)) {
+                    // Spring Page -> { content: [...], ... }
+                    disques = data.content;
+                } else if (data && typeof data === 'object') {
+                    // Si c'est un objet unique (par ex. une erreur ou un disque), essayer de le transformer
+                    // Si l'objet ressemble à { message, disqueId } (réponse POST) : afficher message
+                    if (data.message && (data.disqueId || data.id)) {
+                        console.warn('Réponse inattendue de /api/disques (objet message). Détail:', data);
+                        grid.innerHTML = `<div style="color: white; text-align: center; grid-column: 1/-1;">${data.message}</div>`;
+                        return;
+                    }
+                    // Si l'objet a des propriétés d'un disque, afficher le disque unique
+                    const maybeDisque = data;
+                    if (maybeDisque.titre || maybeDisque.artiste) {
+                        disques = [maybeDisque];
+                    }
+                }
+
+                if (!Array.isArray(disques) || disques.length === 0) {
                     grid.innerHTML = '<div style="color: white; text-align: center; grid-column: 1/-1;">Aucun disque disponible pour le moment.</div>';
                     return;
                 }
-                
+
                 grid.innerHTML = disques.map(disque => `
-                    <div class="disque-card">
+                    <div class="disque-card" onclick="goToDisque(${disque.id})">
                         <h3>${disque.titre}</h3>
                         <p><strong>Artiste:</strong> ${disque.artiste}</p>
                         <p><strong>Genre:</strong> ${disque.genre || 'Non spécifié'}</p>

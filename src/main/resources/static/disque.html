@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Disque - Magasin2Disque</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; color:#333; }
+        nav { background: rgba(255,255,255,0.95); padding:15px 30px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; }
+        nav h1 { color:#667eea; font-size:24px }
+        .btn { padding:8px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:600 }
+        .btn-primary { background:#667eea; color:#fff }
+        .container { max-width:1000px; margin:36px auto; padding:0 20px }
+        .card { background:#fff; border-radius:12px; padding:22px; box-shadow:0 10px 30px rgba(0,0,0,0.15); display:grid; grid-template-columns: 360px 1fr; gap:20px; }
+        .media { border-radius:8px; overflow:hidden; background:#f6f6f6; display:flex; align-items:center; justify-content:center }
+        .media img { width:100%; height:100%; object-fit:cover }
+        h2 { margin-bottom:6px; color:#222 }
+        .meta p { margin:6px 0; color:#555 }
+        .price { color:#667eea; font-weight:700; font-size:20px; margin-top:8px }
+        .actions { display:flex; gap:12px; margin-top:12px }
+        .small { font-size:13px; color:#666 }
+        .full-desc { grid-column:1/-1; margin-top:12px; color:#444 }
+        .message { margin-top:12px; padding:10px; border-radius:8px; display:none }
+        .error { background:#fadbd8; color:#8b1c1c }
+        .success { background:#d5f4e6; color:#1f7a4d }
+        @media (max-width:900px) { .card { grid-template-columns: 1fr; } .media { height:260px } }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>🎵 Magasin2Disque</h1>
+        <div>
+            <a class="btn" href="/index.html">Retour</a>
+            <a class="btn btn-primary" href="/create_disque.html" style="margin-left:8px">Ajouter</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card" id="card">
+            <div class="media" id="media">
+                <span class="small">Chargement image...</span>
+            </div>
+            <div>
+                <h2 id="titre">Chargement...</h2>
+                <div class="meta">
+                    <p><strong>Artiste:</strong> <span id="artiste">—</span></p>
+                    <p><strong>Genre:</strong> <span id="genre">—</span></p>
+                    <p><strong>Année:</strong> <span id="annee">—</span></p>
+                    <p><strong>État:</strong> <span id="etat">—</span></p>
+                    <p><strong>Stock:</strong> <span id="stock">—</span></p>
+                    <p><strong>Vendeur:</strong> <span id="vendeur">—</span></p>
+                    <div class="price" id="prix">— €</div>
+                </div>
+
+                <div class="actions" id="actions">
+                    <!-- boutons dynamiques (éditer / supprimer) -->
+                </div>
+
+                <div class="full-desc">
+                    <h4>Description</h4>
+                    <p id="description">—</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="error" class="message error"></div>
+        <div id="success" class="message success"></div>
+    </div>
+
+    <script>
+        function qs(param) { return new URLSearchParams(window.location.search).get(param); }
+
+        async function loadDisque(id) {
+            try {
+                const res = await fetch('/api/disques/' + encodeURIComponent(id));
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({message:res.statusText}));
+                    throw new Error(err.error || err.message || ('HTTP ' + res.status));
+                }
+                const d = await res.json();
+
+                // remplir la page
+                document.getElementById('titre').textContent = d.titre || '—';
+                document.getElementById('artiste').textContent = d.artiste || '—';
+                document.getElementById('genre').textContent = d.genre || '—';
+                document.getElementById('annee').textContent = d.anneeSortie || '—';
+                document.getElementById('etat').textContent = d.etat || '—';
+                document.getElementById('stock').textContent = (d.stock != null) ? d.stock : '—';
+                document.getElementById('prix').textContent = (d.prix != null) ? (d.prix + ' €') : '—';
+                document.getElementById('description').textContent = d.description || 'Aucune description.';
+
+                const media = document.getElementById('media');
+                media.innerHTML = '';
+                if (d.imageUrl) {
+                    const img = document.createElement('img'); img.src = d.imageUrl; img.alt = d.titre || 'Image disque';
+                    media.appendChild(img);
+                } else {
+                    const span = document.createElement('span'); span.className='small'; span.textContent='Pas d\'image'; media.appendChild(span);
+                }
+
+                // Actions : éditer/supprimer si c'est le vendeur connecté ou admin
+                const actions = document.getElementById('actions');
+                actions.innerHTML = '';
+                const userId = Number(localStorage.getItem('userId')) || null;
+                const role = localStorage.getItem('role') || 'USER';
+                const vendeurId = d.vendeurId != null ? Number(d.vendeurId) : (d.vendeur && d.vendeur.id ? Number(d.vendeur.id) : null);
+
+                if (userId && (role === 'ADMIN' || userId === vendeurId)) {
+                    const edit = document.createElement('button'); edit.className='btn'; edit.textContent='Éditer';
+                    edit.addEventListener('click', ()=>{
+                        // réutiliser create_disque pour édition? simple redirection pour l'instant
+                        window.location.href = '/create_disque.html?edit=' + id;
+                    });
+                    const del = document.createElement('button'); del.className='btn btn-primary'; del.style.background='#e74c3c'; del.textContent='Supprimer';
+                    del.addEventListener('click', ()=> deleteDisque(id));
+                    actions.appendChild(edit); actions.appendChild(del);
+                }
+
+            } catch (err) {
+                console.error('Erreur lors du chargement du disque:', err);
+                const errBox = document.getElementById('error'); errBox.textContent = 'Erreur : ' + (err.message || 'Impossible de charger le disque'); errBox.style.display='block';
+            }
+        }
+
+        async function deleteDisque(id) {
+            if (!confirm('Confirmer la suppression de ce disque ?')) return;
+            try {
+                const res = await fetch('/api/disques/' + encodeURIComponent(id), { method: 'DELETE' });
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({message:res.statusText}));
+                    throw new Error(err.error || err.message || ('HTTP ' + res.status));
+                }
+                const s = document.getElementById('success'); s.textContent = 'Disque supprimé.'; s.style.display='block';
+                setTimeout(()=> window.location.href = '/index.html', 900);
+            } catch (err) {
+                console.error('Erreur suppression:', err);
+                const e = document.getElementById('error'); e.textContent = 'Erreur suppression : ' + (err.message||''); e.style.display='block';
+            }
+        }
+
+        // Exécution au chargement
+        (function(){
+            const id = qs('id');
+            if (!id) {
+                const e = document.getElementById('error'); e.textContent='Aucun identifiant de disque fourni (paramètre id).'; e.style.display='block';
+                return;
+            }
+            loadDisque(id);
+        })();
+    </script>
+</body>
+</html>
