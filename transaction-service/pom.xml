@@ -23,15 +23,6 @@
     </properties>
 
     <dependencies>
-        <!-- Actor Framework JAR -->
-        <dependency>
-            <groupId>com.mb0710</groupId>
-            <artifactId>actor-framework</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../framework.jar</systemPath>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
