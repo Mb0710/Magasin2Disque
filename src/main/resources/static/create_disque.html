@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créer un disque - Magasin2Disque</title>
+    <title id="page-title">Créer un disque - Magasin2Disque</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -51,8 +51,8 @@
 
     <div class="container">
         <div class="card">
-            <h2>Créer un nouveau disque</h2>
-            <p style="color:#666; margin-bottom:18px;">Remplissez le formulaire pour ajouter un disque à votre catalogue.</p>
+            <h2 id="form-title">Créer un nouveau disque</h2>
+            <p id="form-desc" style="color:#666; margin-bottom:18px;">Remplissez le formulaire pour ajouter un disque à votre catalogue.</p>
 
             <form id="disque-form">
                 <div>
@@ -107,7 +107,7 @@
                 <div class="full actions">
                     <div style="flex:1"></div>
                     <button type="button" class="btn" id="cancel">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Créer</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Créer</button>
                 </div>
             </form>
 
@@ -117,10 +117,18 @@
     </div>
 
     <script>
+        function qs(param) { return new URLSearchParams(window.location.search).get(param); }
+        
         const form = document.getElementById('disque-form');
         const errorBox = document.getElementById('error');
         const successBox = document.getElementById('success');
         const cancelBtn = document.getElementById('cancel');
+        const submitBtn = document.getElementById('submit-btn');
+        const formTitle = document.getElementById('form-title');
+        const formDesc = document.getElementById('form-desc');
+        const pageTitle = document.getElementById('page-title');
+
+        let editId = null; // ID du disque en édition (null si création)
 
         cancelBtn.addEventListener('click', () => window.location.href = '/index.html');
 
@@ -136,13 +144,43 @@
             successBox.style.display = 'block';
         }
 
+        // Charger le disque si édition
+        async function loadDisqueForEdit(id) {
+            try {
+                const res = await fetch('/api/disques/' + encodeURIComponent(id));
+                if (!res.ok) throw new Error('Disque non trouvé');
+                const d = await res.json();
+
+                // Pré-remplir le formulaire
+                document.getElementById('titre').value = d.titre || '';
+                document.getElementById('artiste').value = d.artiste || '';
+                document.getElementById('genre').value = d.genre || '';
+                document.getElementById('annee').value = d.anneeSortie || '';
+                document.getElementById('prix').value = d.prix || '';
+                document.getElementById('stock').value = d.stock || '';
+                document.getElementById('description').value = d.description || '';
+                document.getElementById('imageUrl').value = d.imageUrl || '';
+                document.getElementById('etat').value = d.etat || 'NEUF';
+
+                // Adapter l'affichage
+                editId = id;
+                pageTitle.textContent = 'Éditer un disque - Magasin2Disque';
+                formTitle.textContent = 'Éditer le disque';
+                formDesc.textContent = 'Modifiez les informations du disque et enregistrez vos modifications.';
+                submitBtn.textContent = 'Enregistrer';
+
+            } catch (err) {
+                console.error('Erreur chargement disque:', err);
+                showError('Impossible de charger le disque à éditer.');
+            }
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const userId = localStorage.getItem('userId');
-            const userName = localStorage.getItem('username');
             if (!userId) {
-                showError('Vous devez être connecté pour créer un disque.');
+                showError('Vous devez être connecté.');
                 setTimeout(() => window.location.href = '/login.html', 1200);
                 return;
             }
@@ -156,15 +194,23 @@
                 stock: document.getElementById('stock').value ? Number(document.getElementById('stock').value) : 0,
                 description: document.getElementById('description').value.trim() || null,
                 imageUrl: document.getElementById('imageUrl').value.trim() || null,
-                etat: document.getElementById('etat').value || 'NEUF',
-                    vendeurId: Number(userId),
-                disponible: true
+                etat: document.getElementById('etat').value || 'NEUF'
             };
-            console.log('Payload createDisque:', payload);
+
+            // Pour création, ajouter vendeurId et disponible
+            if (!editId) {
+                payload.vendeurId = Number(userId);
+                payload.disponible = true;
+            }
+
+            console.log('Payload:', payload);
 
             try {
-                const res = await fetch('/api/disques', {
-                    method: 'POST',
+                const method = editId ? 'PUT' : 'POST';
+                const endpoint = editId ? `/api/disques/${editId}` : '/api/disques';
+                
+                const res = await fetch(endpoint, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -172,16 +218,25 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showSuccess('Disque créé avec succès (ID: ' + (data.disqueId || data.id || '') + '). Redirection...');
+                    const msg = editId ? 'Disque modifié avec succès' : 'Disque créé avec succès';
+                    showSuccess(msg + '. Redirection...');
                     setTimeout(() => window.location.href = '/index.html', 1100);
                 } else {
-                    showError(data.error || (data.message || 'Erreur lors de la création'));
+                    showError(data.error || (data.message || 'Erreur lors de l\'opération'));
                 }
             } catch (err) {
                 console.error(err);
                 showError('Erreur réseau ou serveur. Vérifiez que l\'application est démarrée.');
             }
         });
+
+        // Déterminer si édition ou création au chargement
+        (function() {
+            const edit = qs('edit');
+            if (edit) {
+                loadDisqueForEdit(edit);
+            }
+        })();
     </script>
 </body>
 </html>

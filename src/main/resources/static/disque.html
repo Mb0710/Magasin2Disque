@@ -116,10 +116,37 @@
                     del.addEventListener('click', ()=> deleteDisque(id));
                     actions.appendChild(edit); actions.appendChild(del);
                 }
+                else{
+                    const acheter = document.createElement('button'); acheter.className='btn';acheter.textContent='Acheter';
+                    acheter.addEventListener('click',()=>acheterDisques(id));
+                    actions.appendChild(acheter);
+                }
 
             } catch (err) {
                 console.error('Erreur lors du chargement du disque:', err);
                 const errBox = document.getElementById('error'); errBox.textContent = 'Erreur : ' + (err.message || 'Impossible de charger le disque'); errBox.style.display='block';
+            }
+        }
+        async function acheterDisques(id){
+            try{
+                const res = await fetch('/api/disques/' + encodeURIComponent(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ disponible: false })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({message:res.statusText}));
+                    throw new Error(err.error || err.message || ('HTTP ' + res.status));
+                }
+                const s = document.getElementById('success');
+                s.textContent = 'Disque acheté avec succès !';
+                s.style.display = 'block';
+                setTimeout(()=> window.location.href = '/index.html', 1100);
+            } catch (err) {
+                console.error('Erreur achat:', err);
+                const e = document.getElementById('error');
+                e.textContent = 'Erreur lors de l\'achat : ' + (err.message || '');
+                e.style.display = 'block';
             }
         }
 

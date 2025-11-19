@@ -81,13 +81,29 @@ public class DisqueController {
     
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDisque(@PathVariable Long id, @RequestBody Disque disque) {
-        return disqueService.getDisqueById(id)
-            .map(existing -> {
-                disque.setId(id);
-                disqueService.updateDisque(disque);
-                return ResponseEntity.ok(Map.of("message", "Disque mis à jour"));
-            })
-            .orElse(ResponseEntity.notFound().build());
+        try {
+            return disqueService.getDisqueById(id)
+                .map(existing -> {
+                    // Fusionner les champs : mettre à jour seulement les champs non-null du disque reçu
+                    if (disque.getTitre() != null) existing.setTitre(disque.getTitre());
+                    if (disque.getArtiste() != null) existing.setArtiste(disque.getArtiste());
+                    if (disque.getGenre() != null) existing.setGenre(disque.getGenre());
+                    if (disque.getAnneeSortie() != null) existing.setAnneeSortie(disque.getAnneeSortie());
+                    if (disque.getPrix() != null) existing.setPrix(disque.getPrix());
+                    if (disque.getStock() != null) existing.setStock(disque.getStock());
+                    if (disque.getDescription() != null) existing.setDescription(disque.getDescription());
+                    if (disque.getImageUrl() != null) existing.setImageUrl(disque.getImageUrl());
+                    if (disque.getEtat() != null) existing.setEtat(disque.getEtat());
+                    // Gérer disponible (booléen) : metttre à jour même si false (c'est un champ important)
+                    existing.setDisponible(disque.isDisponible());
+                    
+                    disqueService.updateDisque(existing);
+                    return ResponseEntity.ok(Map.of("message", "Disque mis à jour"));
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
     
     @DeleteMapping("/{id}")
