@@ -48,7 +48,7 @@ public class CommandeController {
         return commandeService.getCommandeById(id)
             .map(existing -> {
                 commande.setId(id);
-                Commande updated = commandeService.updateCommande(commande);
+                commandeService.updateCommande(commande);
                 return ResponseEntity.ok(Map.of("message", "Commande mise à jour"));
             })
             .orElse(ResponseEntity.notFound().build());

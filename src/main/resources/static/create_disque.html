@@ -90,9 +90,19 @@
                     <textarea id="description" name="description" maxlength="500"></textarea>
                 </div>
 
-                <div>
-                    <label for="imageUrl">Image URL</label>
-                    <input type="url" id="imageUrl" name="imageUrl" />
+                <div class="full">
+                    <label for="imageFile">📷 Upload une image</label>
+                    <input type="file" id="imageFile" accept="image/*" style="margin-bottom:10px;" />
+                    <div id="imagePreview" style="display:none; margin-top:10px; text-align:center;">
+                        <img id="previewImg" src="" style="max-width:300px; max-height:200px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+                        <p style="margin-top:8px; color:#666; font-size:12px;">Preview de l'image</p>
+                    </div>
+                    <p style="color:#999; font-size:12px; margin-top:5px;">Ou utilise une URL ci-dessous</p>
+                </div>
+
+                <div class="full">
+                    <label for="imageUrl">Image URL (optionnel)</label>
+                    <input type="url" id="imageUrl" name="imageUrl" placeholder="https://exemple.com/image.jpg" />
                 </div>
 
                 <div>
@@ -209,9 +219,17 @@
                 const method = editId ? 'PUT' : 'POST';
                 const endpoint = editId ? `/api/disques/${editId}` : '/api/disques';
                 
+                // Récupérer le token JWT
+                const token = localStorage.getItem('jwtToken');
+                const headers = { 'Content-Type': 'application/json' };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`; // ✅ Ajouter le token JWT
+                }
+                
                 const res = await fetch(endpoint, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(payload)
                 });
 
@@ -230,6 +248,53 @@
             }
         });
 
+        // Preview de l'image uploadée
+        document.getElementById('imageFile').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Afficher preview local
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('imagePreview');
+                const img = document.getElementById('previewImg');
+                img.src = event.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Upload immédiatement
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const token = localStorage.getItem('jwtToken');
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const uploadRes = await fetch('/api/images/upload', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                const uploadData = await uploadRes.json();
+
+                if (uploadRes.ok) {
+                    // Mettre l'URL dans le champ imageUrl
+                    document.getElementById('imageUrl').value = uploadData.imageUrl;
+                    console.log('Image uploadée:', uploadData.imageUrl);
+                } else {
+                    showError(uploadData.error || 'Erreur lors de l\'upload');
+                }
+            } catch (err) {
+                console.error('Erreur upload:', err);
+                showError('Erreur lors de l\'upload de l\'image');
+            }
+        });
+
         // Déterminer si édition ou création au chargement
         (function() {
             const edit = qs('edit');
@@ -240,4 +305,3 @@
     </script>
 </body>
 </html>
-<!DOCTYPE html>

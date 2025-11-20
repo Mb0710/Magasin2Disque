@@ -136,7 +136,12 @@
     <script>
         // Vérifier si l'utilisateur est connecté
         const username = localStorage.getItem('username');
-        if (username) {
+        const userId = localStorage.getItem('userId');
+        
+        if (!username || !userId) {
+            // Pas connecté, rediriger vers login
+            window.location.href = '/login.html';
+        } else {
             document.getElementById('user-info').textContent = `Bonjour, ${username}!`;
         }
 

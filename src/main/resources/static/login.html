@@ -169,6 +169,7 @@
                     localStorage.setItem('userId', data.userId);
                     localStorage.setItem('username', data.username);
                     localStorage.setItem('role', data.role);
+                    localStorage.setItem('jwtToken', data.token); // ✅ Sauvegarder le token JWT
                     
                     successMsg.textContent = 'Connexion réussie! Redirection...';
                     successMsg.style.display = 'block';
