@@ -25,14 +25,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>lib-repo</id>
+            <url>file://${project.basedir}/lib-repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Actor Framework - JAR local -->
         <dependency>
             <groupId>com.mb0710</groupId>
             <artifactId>actor-framework</artifactId>
             <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/framework.jar</systemPath>
         </dependency>
 
         <dependency>
