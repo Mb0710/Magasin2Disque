@@ -15,7 +15,38 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# Configuration Actor System
+actor:
+  system:
+    name: transaction-service-actors
+    dispatcher:
+      core-pool-size: 10
+      max-pool-size: 50
+    supervision:
+      strategy: restart
+      max-retries: 3
+
+# Configuration Feign clients
+feign:
+  client:
+    config:
+      user-service:
+        connectTimeout: 5000
+        readTimeout: 5000

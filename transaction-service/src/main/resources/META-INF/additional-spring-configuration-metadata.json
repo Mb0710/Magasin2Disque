@@ -1,0 +1,44 @@
+{
+    "properties": [
+        {
+            "name": "eureka.client.service-url.defaultZone",
+            "type": "java.lang.String",
+            "description": "Eureka server URL for service registration"
+        },
+        {
+            "name": "actor.system.name",
+            "type": "java.lang.String",
+            "description": "Actor system name"
+        },
+        {
+            "name": "actor.system.dispatcher.core-pool-size",
+            "type": "java.lang.Integer",
+            "description": "Core pool size for actor dispatcher"
+        },
+        {
+            "name": "actor.system.dispatcher.max-pool-size",
+            "type": "java.lang.Integer",
+            "description": "Maximum pool size for actor dispatcher"
+        },
+        {
+            "name": "actor.system.supervision.strategy",
+            "type": "java.lang.String",
+            "description": "Supervision strategy for actors"
+        },
+        {
+            "name": "actor.system.supervision.max-retries",
+            "type": "java.lang.Integer",
+            "description": "Maximum retries for actor supervision"
+        },
+        {
+            "name": "feign.client.config.user-service.connectTimeout",
+            "type": "java.lang.Integer",
+            "description": "Feign client connect timeout"
+        },
+        {
+            "name": "feign.client.config.user-service.readTimeout",
+            "type": "java.lang.Integer",
+            "description": "Feign client read timeout"
+        }
+    ]
+}
