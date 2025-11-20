@@ -15,7 +15,46 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: magasindisque@gmail.com
+    password: pwfp ihji yiel woso
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    # Pour désactiver l'email en dev, décommenter ci-dessous:
+    # test-connection: false
+
+# Configuration JWT
+jwt:
+  secret: ${JWT_SECRET:votre-secret-jwt-super-securise-changez-moi-en-production}
+  expiration: 86400000
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# Configuration Actor System
+actor:
+  system:
+    name: user-service-actors
+    dispatcher:
+      core-pool-size: 10
+      max-pool-size: 50
+    supervision:
+      strategy: restart
+      max-retries: 3

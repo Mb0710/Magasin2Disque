@@ -1,0 +1,44 @@
+{
+    "properties": [
+        {
+            "name": "jwt.secret",
+            "type": "java.lang.String",
+            "description": "Secret key for JWT token generation and validation"
+        },
+        {
+            "name": "jwt.expiration",
+            "type": "java.lang.Long",
+            "description": "JWT token expiration time in milliseconds"
+        },
+        {
+            "name": "eureka.client.service-url.defaultZone",
+            "type": "java.lang.String",
+            "description": "Eureka server URL for service registration"
+        },
+        {
+            "name": "actor.system.name",
+            "type": "java.lang.String",
+            "description": "Actor system name"
+        },
+        {
+            "name": "actor.system.dispatcher.core-pool-size",
+            "type": "java.lang.Integer",
+            "description": "Core pool size for actor dispatcher"
+        },
+        {
+            "name": "actor.system.dispatcher.max-pool-size",
+            "type": "java.lang.Integer",
+            "description": "Maximum pool size for actor dispatcher"
+        },
+        {
+            "name": "actor.system.supervision.strategy",
+            "type": "java.lang.String",
+            "description": "Supervision strategy for actors"
+        },
+        {
+            "name": "actor.system.supervision.max-retries",
+            "type": "java.lang.Integer",
+            "description": "Maximum retries for actor supervision"
+        }
+    ]
+}
