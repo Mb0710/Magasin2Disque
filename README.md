@@ -1,1 +1,3 @@
-# Magasin2Disque
+- modifier les annonces
+- Admin
+- quand je crash le serv faudrait deco
