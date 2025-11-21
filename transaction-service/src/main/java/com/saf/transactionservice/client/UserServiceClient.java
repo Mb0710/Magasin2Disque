@@ -1,6 +1,7 @@
 package com.saf.transactionservice.client;
 
 import com.saf.transactionservice.dto.AnnonceDTO;
+import com.saf.transactionservice.dto.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,4 +16,7 @@ public interface UserServiceClient {
 
     @PutMapping("/api/annonces/{id}/mark-unavailable")
     void markAnnonceAsUnavailable(@PathVariable("id") Long id);
+
+    @GetMapping("/api/users/{id}")
+    UserDTO getUser(@PathVariable("id") Long id);
 }

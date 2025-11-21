@@ -80,6 +80,17 @@ public class OffreActor implements Actor {
             offre.setAnnonceId(annonce.getId());
             offre.setAnnonceTitre(annonce.getTitre() + " - " + annonce.getArtiste());
             offre.setAcheteurId(msg.acheteurId());
+            
+            // Récupérer le username de l'acheteur
+            try {
+                var acheteur = userServiceClient.getUser(msg.acheteurId());
+                if (acheteur != null) {
+                    offre.setAcheteurUsername(acheteur.getUsername());
+                }
+            } catch (Exception e) {
+                logger.warn("Impossible de récupérer le username de l'acheteur: " + e.getMessage());
+            }
+            
             offre.setVendeurId(annonce.getVendeurId());
             offre.setVendeurUsername(annonce.getVendeurUsername());
             offre.setPrixPropose(msg.prixPropose());
@@ -89,13 +100,21 @@ public class OffreActor implements Actor {
 
             Offre saved = offreRepository.save(offre);
 
-            notificationActor.send(
-                    new NotificationActor.NotifyVendeurNouvelleOffre(
-                            annonce.getVendeurUsername(),
-                            annonce.getTitre() + " - " + annonce.getArtiste(),
-                            msg.prixPropose(),
-                            annonce.getPrix()),
-                    originalMessage.getSender());
+            // Récupérer l'email réel du vendeur
+            try {
+                var vendeur = userServiceClient.getUser(annonce.getVendeurId());
+                if (vendeur != null && vendeur.getEmail() != null) {
+                    notificationActor.send(
+                            new NotificationActor.NotifyVendeurNouvelleOffre(
+                                    vendeur.getEmail(),
+                                    annonce.getTitre() + " - " + annonce.getArtiste(),
+                                    msg.prixPropose(),
+                                    annonce.getPrix()),
+                            originalMessage.getSender());
+                }
+            } catch (Exception e) {
+                logger.warn("Impossible d'envoyer la notification au vendeur: " + e.getMessage());
+            }
 
             originalMessage.reply(new OffreCreated(saved));
 
@@ -160,12 +179,20 @@ public class OffreActor implements Actor {
                 }
             }
 
-            notificationActor.send(
-                    new NotificationActor.NotifyAcheteurOffreAcceptee(
-                            offre.getAcheteurUsername(),
-                            offre.getAnnonceTitre(),
-                            offre.getPrixPropose()),
-                    originalMessage.getSender());
+            // Récupérer l'email réel de l'acheteur
+            try {
+                var acheteur = userServiceClient.getUser(offre.getAcheteurId());
+                if (acheteur != null && acheteur.getEmail() != null) {
+                    notificationActor.send(
+                            new NotificationActor.NotifyAcheteurOffreAcceptee(
+                                    acheteur.getEmail(),
+                                    offre.getAnnonceTitre(),
+                                    offre.getPrixPropose()),
+                            originalMessage.getSender());
+                }
+            } catch (Exception e) {
+                logger.warn("Impossible d'envoyer la notification à l'acheteur: " + e.getMessage());
+            }
 
             originalMessage.reply(new OffreAccepted(offre));
 
@@ -195,11 +222,19 @@ public class OffreActor implements Actor {
             offre.setRespondedAt(LocalDateTime.now());
             offreRepository.save(offre);
 
-            notificationActor.send(
-                    new NotificationActor.NotifyAcheteurOffreRefusee(
-                            offre.getAcheteurUsername(),
-                            offre.getAnnonceTitre()),
-                    originalMessage.getSender());
+            // Récupérer l'email réel de l'acheteur
+            try {
+                var acheteur = userServiceClient.getUser(offre.getAcheteurId());
+                if (acheteur != null && acheteur.getEmail() != null) {
+                    notificationActor.send(
+                            new NotificationActor.NotifyAcheteurOffreRefusee(
+                                    acheteur.getEmail(),
+                                    offre.getAnnonceTitre()),
+                            originalMessage.getSender());
+                }
+            } catch (Exception e) {
+                logger.warn("Impossible d'envoyer la notification à l'acheteur: " + e.getMessage());
+            }
 
             originalMessage.reply(new OffreRefused(offre));
 

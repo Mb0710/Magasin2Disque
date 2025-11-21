@@ -85,12 +85,20 @@ public class TransactionActor implements Actor {
                 logger.warn("Impossible de supprimer l'annonce: " + e.getMessage());
             }
 
-            notificationActor.send(
-                    new NotificationActor.NotifyVendeurAchatDirect(
-                            annonce.getVendeurUsername(),
-                            annonce.getTitre() + " - " + annonce.getArtiste(),
-                            annonce.getPrix()),
-                    originalMessage.getSender());
+            // Récupérer l'email réel du vendeur
+            try {
+                var vendeur = userServiceClient.getUser(annonce.getVendeurId());
+                if (vendeur != null && vendeur.getEmail() != null) {
+                    notificationActor.send(
+                            new NotificationActor.NotifyVendeurAchatDirect(
+                                    vendeur.getEmail(),
+                                    annonce.getTitre() + " - " + annonce.getArtiste(),
+                                    annonce.getPrix()),
+                            originalMessage.getSender());
+                }
+            } catch (Exception e) {
+                logger.warn("Impossible d'envoyer la notification au vendeur: " + e.getMessage());
+            }
 
             originalMessage.reply(new TransactionCreated(saved));
 
