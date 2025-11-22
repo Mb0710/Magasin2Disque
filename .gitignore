@@ -1,6 +1,11 @@
 # Compiled class files
 *.class
 *.jar
+!lib-repo/**/*.jar
+*.war
+*.ear
+!lib-repo/**/*.jar
+
 *.war
 *.ear
 *.zip
@@ -61,3 +66,4 @@ logs/
 # Test coverage
 *.exec
 .sonar/
+
