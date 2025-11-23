@@ -80,7 +80,7 @@ public class OffreActor implements Actor {
             offre.setAnnonceId(annonce.getId());
             offre.setAnnonceTitre(annonce.getTitre() + " - " + annonce.getArtiste());
             offre.setAcheteurId(msg.acheteurId());
-            
+
             // Récupérer le username de l'acheteur
             try {
                 var acheteur = userServiceClient.getUser(msg.acheteurId());
@@ -90,7 +90,7 @@ public class OffreActor implements Actor {
             } catch (Exception e) {
                 logger.warn("Impossible de récupérer le username de l'acheteur: " + e.getMessage());
             }
-            
+
             offre.setVendeurId(annonce.getVendeurId());
             offre.setVendeurUsername(annonce.getVendeurUsername());
             offre.setPrixPropose(msg.prixPropose());
@@ -100,10 +100,27 @@ public class OffreActor implements Actor {
 
             Offre saved = offreRepository.save(offre);
 
+            // Créer une notification dans la base de données
+            try {
+                java.util.Map<String, Object> notificationData = new java.util.HashMap<>();
+                notificationData.put("userId", annonce.getVendeurId());
+                notificationData.put("type", "NEW_OFFER");
+                notificationData.put("message", String.format("Nouvelle offre de %.2f€ pour \"%s\"",
+                        msg.prixPropose(), annonce.getTitre() + " - " + annonce.getArtiste()));
+                notificationData.put("relatedId", saved.getId());
+                notificationData.put("isRead", false);
+
+                userServiceClient.createNotification(notificationData);
+                logger.info("Notification créée pour le vendeur ID: " + annonce.getVendeurId());
+            } catch (Exception e) {
+                logger.error("Erreur lors de la création de la notification", e);
+            }
+
             // Récupérer l'email réel du vendeur
             try {
                 var vendeur = userServiceClient.getUser(annonce.getVendeurId());
                 if (vendeur != null && vendeur.getEmail() != null) {
+                    logger.info("Envoi notification au vendeur: " + vendeur.getEmail());
                     notificationActor.send(
                             new NotificationActor.NotifyVendeurNouvelleOffre(
                                     vendeur.getEmail(),
@@ -111,9 +128,11 @@ public class OffreActor implements Actor {
                                     msg.prixPropose(),
                                     annonce.getPrix()),
                             originalMessage.getSender());
+                } else {
+                    logger.warn("Vendeur ou email vendeur null. Vendeur: " + vendeur);
                 }
             } catch (Exception e) {
-                logger.warn("Impossible d'envoyer la notification au vendeur: " + e.getMessage());
+                logger.error("Erreur lors de l'envoi de la notification au vendeur", e);
             }
 
             originalMessage.reply(new OffreCreated(saved));
@@ -179,19 +198,38 @@ public class OffreActor implements Actor {
                 }
             }
 
+            // Créer une notification dans la base de données pour l'acheteur
+            try {
+                java.util.Map<String, Object> notificationData = new java.util.HashMap<>();
+                notificationData.put("userId", offre.getAcheteurId());
+                notificationData.put("type", "OFFER_ACCEPTED");
+                notificationData.put("message", String.format("Votre offre de %.2f€ pour \"%s\" a été acceptée!",
+                        offre.getPrixPropose(), offre.getAnnonceTitre()));
+                notificationData.put("relatedId", transaction.getId());
+                notificationData.put("isRead", false);
+
+                userServiceClient.createNotification(notificationData);
+                logger.info("Notification créée pour l'acheteur ID: " + offre.getAcheteurId());
+            } catch (Exception e) {
+                logger.error("Erreur lors de la création de la notification", e);
+            }
+
             // Récupérer l'email réel de l'acheteur
             try {
                 var acheteur = userServiceClient.getUser(offre.getAcheteurId());
                 if (acheteur != null && acheteur.getEmail() != null) {
+                    logger.info("Envoi notification à l'acheteur: " + acheteur.getEmail());
                     notificationActor.send(
                             new NotificationActor.NotifyAcheteurOffreAcceptee(
                                     acheteur.getEmail(),
                                     offre.getAnnonceTitre(),
                                     offre.getPrixPropose()),
                             originalMessage.getSender());
+                } else {
+                    logger.warn("Acheteur ou email acheteur null. Acheteur: " + acheteur);
                 }
             } catch (Exception e) {
-                logger.warn("Impossible d'envoyer la notification à l'acheteur: " + e.getMessage());
+                logger.error("Erreur lors de l'envoi de la notification à l'acheteur", e);
             }
 
             originalMessage.reply(new OffreAccepted(offre));
@@ -222,18 +260,37 @@ public class OffreActor implements Actor {
             offre.setRespondedAt(LocalDateTime.now());
             offreRepository.save(offre);
 
+            // Créer une notification dans la base de données pour l'acheteur
+            try {
+                java.util.Map<String, Object> notificationData = new java.util.HashMap<>();
+                notificationData.put("userId", offre.getAcheteurId());
+                notificationData.put("type", "OFFER_REFUSED");
+                notificationData.put("message", String.format("Votre offre pour \"%s\" a été refusée",
+                        offre.getAnnonceTitre()));
+                notificationData.put("relatedId", offre.getId());
+                notificationData.put("isRead", false);
+
+                userServiceClient.createNotification(notificationData);
+                logger.info("Notification créée pour l'acheteur ID: " + offre.getAcheteurId());
+            } catch (Exception e) {
+                logger.error("Erreur lors de la création de la notification", e);
+            }
+
             // Récupérer l'email réel de l'acheteur
             try {
                 var acheteur = userServiceClient.getUser(offre.getAcheteurId());
                 if (acheteur != null && acheteur.getEmail() != null) {
+                    logger.info("Envoi notification à l'acheteur: " + acheteur.getEmail());
                     notificationActor.send(
                             new NotificationActor.NotifyAcheteurOffreRefusee(
                                     acheteur.getEmail(),
                                     offre.getAnnonceTitre()),
                             originalMessage.getSender());
+                } else {
+                    logger.warn("Acheteur ou email acheteur null. Acheteur: " + acheteur);
                 }
             } catch (Exception e) {
-                logger.warn("Impossible d'envoyer la notification à l'acheteur: " + e.getMessage());
+                logger.error("Erreur lors de l'envoi de la notification à l'acheteur", e);
             }
 
             originalMessage.reply(new OffreRefused(offre));

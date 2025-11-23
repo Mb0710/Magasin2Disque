@@ -89,15 +89,18 @@ public class TransactionActor implements Actor {
             try {
                 var vendeur = userServiceClient.getUser(annonce.getVendeurId());
                 if (vendeur != null && vendeur.getEmail() != null) {
+                    logger.info("Envoi notification au vendeur: " + vendeur.getEmail());
                     notificationActor.send(
                             new NotificationActor.NotifyVendeurAchatDirect(
                                     vendeur.getEmail(),
                                     annonce.getTitre() + " - " + annonce.getArtiste(),
                                     annonce.getPrix()),
                             originalMessage.getSender());
+                } else {
+                    logger.warn("Vendeur ou email vendeur null. Vendeur: " + vendeur);
                 }
             } catch (Exception e) {
-                logger.warn("Impossible d'envoyer la notification au vendeur: " + e.getMessage());
+                logger.error("Erreur lors de l'envoi de la notification au vendeur", e);
             }
 
             originalMessage.reply(new TransactionCreated(saved));

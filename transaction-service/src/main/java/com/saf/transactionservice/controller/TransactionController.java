@@ -86,4 +86,40 @@ public class TransactionController {
             return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur"));
         }
     }
+
+    @GetMapping("/acheteur/{acheteurId}")
+    public ResponseEntity<?> getTransactionsByAcheteur(@PathVariable Long acheteurId) {
+        try {
+            Object response = transactionActor.ask(
+                    new GetTransactionsByUser(acheteurId, false),
+                    Duration.ofSeconds(5)).get(5, TimeUnit.SECONDS);
+
+            if (response instanceof TransactionsList result) {
+                return ResponseEntity.ok(result.transactions());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur"));
+        }
+    }
+
+    @GetMapping("/vendeur/{vendeurId}")
+    public ResponseEntity<?> getTransactionsByVendeur(@PathVariable Long vendeurId) {
+        try {
+            Object response = transactionActor.ask(
+                    new GetTransactionsByUser(vendeurId, true),
+                    Duration.ofSeconds(5)).get(5, TimeUnit.SECONDS);
+
+            if (response instanceof TransactionsList result) {
+                return ResponseEntity.ok(result.transactions());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur"));
+        }
+    }
 }
