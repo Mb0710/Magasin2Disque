@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Annonces - Magasin2Disque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .annonces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .annonce-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .annonce-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .annonce-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .annonce-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .annonce-card p {
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .price {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-disponible {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-vendu {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .card-actions .btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <h1>🎵 Magasin2Disque</h1>
+        <div class="nav-right">
+            <a href="/index.html" class="btn btn-secondary">← Retour</a>
+            <a href="/mes-transactions.html" class="btn btn-primary">💳 Mes Transactions</a>
+            <a href="/mes-offres.html" class="btn btn-primary">💼 Mes Offres</a>
+            <a href="/create-annonce.html" class="btn btn-primary">➕ Créer une annonce</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h2>📋 Mes Annonces</h2>
+            <p style="color: #666;">Gérez vos annonces de disques</p>
+        </div>
+
+        <div id="loading" class="loading">Chargement de vos annonces...</div>
+        <div id="annonces-container" class="annonces-grid" style="display: none;"></div>
+        <div id="empty-state" style="display: none;"></div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+
+        if (!userId) {
+            window.location.href = '/login.html';
+        }
+
+        async function loadMesAnnonces() {
+            try {
+                const response = await fetch('/api/annonces');
+                const data = await response.json();
+
+                let allAnnonces = Array.isArray(data) ? data : (data.annonces || []);
+
+                // Filtrer uniquement les annonces de l'utilisateur connecté
+                const mesAnnonces = allAnnonces.filter(annonce => annonce.vendeurId == userId);
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (mesAnnonces.length === 0) {
+                    displayEmptyState();
+                } else {
+                    displayAnnonces(mesAnnonces);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('empty-state').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h2>Erreur de chargement</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Impossible de charger vos annonces</p>
+                    </div>
+                `;
+                document.getElementById('empty-state').style.display = 'block';
+            }
+        }
+
+        function displayEmptyState() {
+            document.getElementById('empty-state').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h2>Aucune annonce</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Vous n'avez pas encore créé d'annonce</p>
+                    <a href="/create-annonce.html" class="btn btn-primary">Créer ma première annonce</a>
+                </div>
+            `;
+            document.getElementById('empty-state').style.display = 'block';
+        }
+
+        function displayAnnonces(annonces) {
+            const container = document.getElementById('annonces-container');
+
+            container.innerHTML = annonces.map(annonce => `
+                <div class="annonce-card">
+                    ${annonce.imageUrl ? `<img src="${annonce.imageUrl}" alt="${annonce.titre}">` : ''}
+                    <h3>${annonce.titre}</h3>
+                    <p><strong>Artiste:</strong> ${annonce.artiste}</p>
+                    <p><strong>Genre:</strong> ${annonce.genre || 'Non spécifié'}</p>
+                    <p><strong>État:</strong> ${annonce.etat}</p>
+                    <div class="price">${annonce.prix.toFixed(2)} €</div>
+                    <span class="status ${annonce.disponible ? 'status-disponible' : 'status-vendu'}">
+                        ${annonce.disponible ? '✅ Disponible' : '❌ Vendu'}
+                    </span>
+                    ${annonce.disponible ? `
+                        <div class="card-actions">
+                            <button class="btn btn-edit" onclick="editAnnonce(${annonce.id})">✏️ Modifier</button>
+                            <button class="btn btn-delete" onclick="deleteAnnonce(${annonce.id})">🗑️ Supprimer</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            container.style.display = 'grid';
+        }
+
+        function editAnnonce(id) {
+            window.location.href = `/edit-annonce.html?id=${id}`;
+        }
+
+        async function deleteAnnonce(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/annonces/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Annonce supprimée avec succès');
+                    loadMesAnnonces(); // Recharger la liste
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            } catch (error) {
+                alert('Erreur serveur');
+            }
+        }
+
+        loadMesAnnonces();
+    </script>
+</body>
+
+</html>

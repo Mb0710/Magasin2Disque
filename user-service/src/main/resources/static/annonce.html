@@ -270,7 +270,11 @@
                             </div>
                             <div class="info-item">
                                 <label>Vendeur</label>
-                                <div class="value">${annonce.vendeurUsername || 'Inconnu'}</div>
+                                <div class="value">
+                                    <a href="/profil.html?id=${annonce.vendeurId}" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                        👤 ${annonce.vendeurUsername || 'Inconnu'}
+                                    </a>
+                                </div>
                             </div>
                             <div class="info-item">
                                 <label>Disponibilité</label>
@@ -299,10 +303,16 @@
                         ` : isOwner ? `
                             <div style="text-align: center; padding: 20px;">
                                 <p style="color: #666; margin-bottom: 20px;">C'est votre annonce</p>
-                                <button class="btn" style="background: #e74c3c; max-width: 300px; margin: 0 auto;" 
-                                        onclick="supprimerAnnonce()">
-                                    🗑️ Supprimer l'annonce
-                                </button>
+                                <div style="display: flex; gap: 15px; max-width: 600px; margin: 0 auto;">
+                                    <button class="btn" style="background: #667eea; flex: 1;" 
+                                            onclick="modifierAnnonce()">
+                                        ✏️ Modifier l'annonce
+                                    </button>
+                                    <button class="btn" style="background: #e74c3c; flex: 1;" 
+                                            onclick="supprimerAnnonce()">
+                                        🗑️ Supprimer l'annonce
+                                    </button>
+                                </div>
                             </div>
                         ` : `
                             <div class="error">Annonce non disponible</div>
@@ -348,6 +358,10 @@
                 errorMsg.textContent = 'Erreur serveur';
                 errorMsg.style.display = 'block';
             }
+        }
+
+        function modifierAnnonce() {
+            window.location.href = `/edit-annonce.html?id=${annonceId}`;
         }
 
         async function supprimerAnnonce() {

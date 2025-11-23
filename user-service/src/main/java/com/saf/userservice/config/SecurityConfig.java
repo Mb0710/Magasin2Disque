@@ -30,7 +30,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/annonces/**", "/api/uploads/**", "/uploads/**",
+                        .requestMatchers("/api/auth/**", "/api/annonces/**", "/api/users/**", "/api/uploads/**",
+                                "/api/reviews/**", "/api/notifications/**",
+                                "/uploads/**",
                                 "/*.html", "/*.css", "/*.js", "/")
                         .permitAll()
                         .anyRequest().authenticated());

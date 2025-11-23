@@ -297,7 +297,8 @@
             <h1>💼 Mes Offres Reçues</h1>
             <div class="header-actions">
                 <a href="index.html" class="btn btn-secondary">← Retour</a>
-                <a href="annonce.html" class="btn btn-primary">Mes Annonces</a>
+                <a href="mes-annonces.html" class="btn btn-primary">📋 Mes Annonces</a>
+                <a href="mes-transactions.html" class="btn btn-primary">💳 Mes Transactions</a>
             </div>
         </div>
 
@@ -419,7 +420,12 @@
                             <div class="offre-info">
                                 <div class="info-item">
                                     <span class="info-label">👤 Acheteur</span>
-                                    <span class="info-value">${offre.acheteurUsername || 'Utilisateur'}</span>
+                                    <span class="info-value">
+                                        <a href="/profil.html?id=${offre.acheteurId}" 
+                                           style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                            ${offre.acheteurUsername || 'Utilisateur'}
+                                        </a>
+                                    </span>
                                 </div>
 
                                 <div class="info-item">
@@ -427,10 +433,10 @@
                                     <div class="price-comparison">
                                         <span class="price-initial">${offre.prixInitial.toFixed(2)}€</span>
                                         <span class="price-proposed">${offre.prixPropose.toFixed(2)}€</span>
-                                        ${prixDifference > 0 ? 
-                                            `<span class="price-difference">(-${pourcentageDifference}%)</span>` : 
-                                            `<span style="color: #10b981;">(+${Math.abs(pourcentageDifference)}%)</span>`
-                                        }
+                                        ${prixDifference > 0 ?
+                        `<span class="price-difference">(-${pourcentageDifference}%)</span>` :
+                        `<span style="color: #10b981;">(+${Math.abs(pourcentageDifference)}%)</span>`
+                    }
                                     </div>
                                 </div>
                             </div>
