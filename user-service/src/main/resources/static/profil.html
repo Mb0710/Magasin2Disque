@@ -240,6 +240,7 @@
                         <div class="profile-meta">
                             <p id="member-since"></p>
                         </div>
+                        <div id="contact-button-container" style="margin-top: 15px;"></div>
                     </div>
                 </div>
 
@@ -325,11 +326,26 @@
             // Annonces actives
             document.getElementById('active-annonces').textContent = annonces.length;
 
+            // Ajouter bouton de contact si ce n'est pas le profil de l'utilisateur actuel
+            if (userId != currentUserId) {
+                document.getElementById('contact-button-container').innerHTML = `
+                    <button class="btn btn-primary" onclick="contacterUtilisateur(${userId})" 
+                            style="padding: 12px 30px; font-size: 16px;">
+                        💬 Envoyer un message
+                    </button>
+                `;
+            }
+
             // Afficher les avis
             displayReviews(reviewsData.reviews);
 
             // Afficher les annonces
             displayAnnonces(annonces);
+        }
+        
+        // Fonction pour contacter l'utilisateur
+        function contacterUtilisateur(targetUserId) {
+            window.location.href = `/messages.html?userId=${targetUserId}`;
         }
 
         function getStars(rating) {

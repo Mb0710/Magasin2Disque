@@ -292,10 +292,14 @@
                         ${!isOwner && annonce.disponible ? `
                             <div class="actions">
                                 <button class="btn btn-primary" onclick="acheterDirect()">
-                                    Acheter maintenant
+                                    💳 Acheter maintenant
                                 </button>
                                 <button class="btn btn-secondary" onclick="faireOffre()">
-                                    Faire une offre
+                                    💼 Faire une offre
+                                </button>
+                                <button class="btn" style="background: #4CAF50; color: white;" 
+                                        onclick="contacterVendeur(${annonce.vendeurId})">
+                                    💬 Contacter le vendeur
                                 </button>
                             </div>
                             <div class="success" id="success-msg"></div>
@@ -423,6 +427,17 @@
             } catch (error) {
                 errorMsg.textContent = 'Erreur serveur';
                 errorMsg.style.display = 'block';
+            }
+        }
+
+        // Fonction pour contacter le vendeur via messagerie
+        async function contacterVendeur(vendeurId) {
+            // Créer ou trouver la conversation avec le vendeur
+            try {
+                // Rediriger vers la messagerie avec l'ID du vendeur
+                window.location.href = `/messages.html?userId=${vendeurId}`;
+            } catch (error) {
+                alert('Erreur lors de l\'ouverture de la messagerie');
             }
         }
 
