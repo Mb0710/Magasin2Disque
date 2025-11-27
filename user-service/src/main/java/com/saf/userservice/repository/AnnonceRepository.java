@@ -15,4 +15,8 @@ public interface AnnonceRepository extends JpaRepository<Annonce, Long> {
     List<Annonce> findByTitreContainingIgnoreCase(String titre);
 
     List<Annonce> findByGenre(String genre);
+
+    long countByDisponibleTrue();
+
+    int countByVendeurId(Long vendeurId);
 }

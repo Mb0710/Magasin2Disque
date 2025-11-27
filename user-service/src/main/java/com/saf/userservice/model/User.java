@@ -38,6 +38,18 @@ public class User {
     @Column(name = "token_expiry_date")
     private LocalDateTime tokenExpiryDate;
 
+    @Column(name = "is_banned")
+    private boolean isBanned = false;
+
+    @Column(name = "banned_at")
+    private LocalDateTime bannedAt;
+
+    @Column(name = "banned_reason", length = 500)
+    private String bannedReason;
+
+    @Column(name = "banned_by")
+    private String bannedBy;
+
     // Constructeurs
     public User() {
     }
@@ -127,5 +139,37 @@ public class User {
 
     public void setTokenExpiryDate(LocalDateTime tokenExpiryDate) {
         this.tokenExpiryDate = tokenExpiryDate;
+    }
+
+    public boolean isBanned() {
+        return isBanned;
+    }
+
+    public void setBanned(boolean banned) {
+        isBanned = banned;
+    }
+
+    public LocalDateTime getBannedAt() {
+        return bannedAt;
+    }
+
+    public void setBannedAt(LocalDateTime bannedAt) {
+        this.bannedAt = bannedAt;
+    }
+
+    public String getBannedReason() {
+        return bannedReason;
+    }
+
+    public void setBannedReason(String bannedReason) {
+        this.bannedReason = bannedReason;
+    }
+
+    public String getBannedBy() {
+        return bannedBy;
+    }
+
+    public void setBannedBy(String bannedBy) {
+        this.bannedBy = bannedBy;
     }
 }

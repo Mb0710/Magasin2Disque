@@ -100,6 +100,14 @@ public class UserActor implements Actor {
                 return;
             }
 
+            // Refuser la connexion si l'utilisateur est banni
+            if (user.isBanned()) {
+                String reason = user.getBannedReason();
+                String msgText = "Compte banni" + (reason != null && !reason.isBlank() ? (": " + reason) : "");
+                originalMessage.reply(new UserMessages.UserOperationError(msgText));
+                return;
+            }
+
             String token = jwtUtil.generateToken(user.getUsername(), user.getId(), user.getRole());
             originalMessage
                     .reply(new UserMessages.LoginSuccess(token, user.getId(), user.getUsername(), user.getRole()));

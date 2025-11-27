@@ -191,10 +191,21 @@
                     localStorage.setItem('userId', data.userId);
                     localStorage.setItem('username', data.username);
                     localStorage.setItem('token', data.token);
+                    // Stocker le rôle renvoyé par le backend (ex: 'ADMIN', 'USER')
+                    if (data.role) {
+                        localStorage.setItem('role', data.role);
+                    }
 
                     successMsg.textContent = 'Connexion réussie! Redirection...';
                     successMsg.style.display = 'block';
-                    setTimeout(() => window.location.href = '/index.html', 1000);
+                    // Rediriger les admins vers la page d'administration
+                    setTimeout(() => {
+                        if (data.role === 'ADMIN') {
+                            window.location.href = '/admin.html';
+                        } else {
+                            window.location.href = '/index.html';
+                        }
+                    }, 1000);
                 } else {
                     errorMsg.textContent = data.error || 'Erreur de connexion';
                     errorMsg.style.display = 'block';

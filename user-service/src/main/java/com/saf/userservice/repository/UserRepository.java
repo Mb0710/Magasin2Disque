@@ -17,4 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    long countByEnabledTrue();
+
+    long countByIsBannedTrue();
+
+    java.util.List<User> findByIsBannedTrue();
+
+    java.util.List<User> findByUsernameContainingOrEmailContaining(String username, String email);
 }
