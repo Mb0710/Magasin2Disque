@@ -45,6 +45,8 @@ public class TransactionActor implements Actor {
                 handleGetTransaction(msg, message);
             } else if (payload instanceof GetTransactionsByUser msg) {
                 handleGetTransactionsByUser(msg, message);
+            } else if (payload instanceof GetAllTransactions msg) {
+                handleGetAllTransactions(msg, message);
             }
         } catch (Exception e) {
             logger.error("Erreur dans TransactionActor: " + e.getMessage(), e);
@@ -123,6 +125,11 @@ public class TransactionActor implements Actor {
                 ? transactionRepository.findByVendeurId(msg.userId())
                 : transactionRepository.findByAcheteurId(msg.userId());
 
+        originalMessage.reply(new TransactionsList(transactions));
+    }
+
+    private void handleGetAllTransactions(GetAllTransactions msg, Message originalMessage) {
+        List<Transaction> transactions = transactionRepository.findAll();
         originalMessage.reply(new TransactionsList(transactions));
     }
 }

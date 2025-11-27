@@ -122,4 +122,40 @@ public class TransactionController {
             return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur"));
         }
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> countTransactions() {
+        try {
+            Object response = transactionActor.ask(
+                    new GetAllTransactions(),
+                    Duration.ofSeconds(5)).get(5, TimeUnit.SECONDS);
+
+            if (response instanceof TransactionsList result) {
+                return ResponseEntity.ok((long) result.transactions().size());
+            }
+
+            return ResponseEntity.ok(0L);
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(0L);
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllTransactions() {
+        try {
+            Object response = transactionActor.ask(
+                    new GetAllTransactions(),
+                    Duration.ofSeconds(5)).get(5, TimeUnit.SECONDS);
+
+            if (response instanceof TransactionsList result) {
+                return ResponseEntity.ok(result.transactions());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur"));
+        }
+    }
 }

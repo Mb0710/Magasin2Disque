@@ -18,6 +18,9 @@ public class TransactionMessages {
     public record GetTransactionsByUser(Long userId, boolean isVendeur) {
     }
 
+    public record GetAllTransactions() {
+    }
+
     // Réponses
     public record TransactionCreated(Transaction transaction) {
     }
