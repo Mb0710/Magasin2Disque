@@ -38,7 +38,7 @@ public class User {
     @Column(name = "token_expiry_date")
     private LocalDateTime tokenExpiryDate;
 
-    @Column(name = "is_banned")
+    @Column(name = "is_banned", nullable = false)
     private boolean isBanned = false;
 
     @Column(name = "banned_at")
@@ -145,8 +145,8 @@ public class User {
         return isBanned;
     }
 
-    public void setBanned(boolean banned) {
-        isBanned = banned;
+    public void setBanned(Boolean banned) {
+        isBanned = banned != null ? banned : false;
     }
 
     public LocalDateTime getBannedAt() {

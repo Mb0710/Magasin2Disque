@@ -9,7 +9,7 @@ public class UserDetailsDTO {
     private String role;
     private boolean enabled;
     private boolean emailVerified;
-    private boolean banned;
+    private Boolean banned;
     private LocalDateTime bannedAt;
     private String bannedReason;
     private String bannedBy;
@@ -70,12 +70,12 @@ public class UserDetailsDTO {
         this.emailVerified = emailVerified;
     }
 
-    public boolean isBanned() {
+    public Boolean isBanned() {
         return banned;
     }
 
-    public void setBanned(boolean banned) {
-        this.banned = banned;
+    public void setBanned(Boolean banned) {
+        this.banned = banned != null ? banned : false;
     }
 
     public LocalDateTime getBannedAt() {
