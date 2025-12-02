@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Magasin2Disque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .welcome p {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .annonces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .annonce-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .annonce-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .annonce-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .annonce-card p {
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .price {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .stock {
+            color: #27ae60;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <h1>🎵 Magasin2Disque</h1>
+        <div class="nav-right">
+            <span class="user-info" id="user-info">Bienvenue!</span>
+            <a href="/messages.html" class="btn btn-primary">💬 Messagerie</a>
+            <a href="/notifications.html" class="btn btn-primary notification-badge">
+                🔔 Notifications
+                <span class="badge" id="notif-badge" style="display: none;">0</span>
+            </a>
+            <a href="/mes-annonces.html" class="btn btn-primary">📋 Mes Annonces</a>
+            <a href="/mes-transactions.html" class="btn btn-primary">💳 Mes Transactions</a>
+            <a href="/mes-offres.html" class="btn btn-primary">💼 Mes Offres</a>
+            <a href="/create-annonce.html" class="btn btn-primary">➕ Créer</a>
+            <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Bienvenue sur Magasin2Disque!</h2>
+            <p>Votre marketplace de disques vinyles</p>
+
+            <!-- Barre de recherche -->
+            <div style="margin-top: 25px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="search-input" placeholder="Rechercher par titre ou artiste..."
+                    style="flex: 1; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;"
+                    onkeyup="handleSearch(event)">
+                <select id="genre-filter"
+                    style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;"
+                    onchange="handleFilterChange()">
+                    <option value="">Tous les genres</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Pop">Pop</option>
+                    <option value="Jazz">Jazz</option>
+                    <option value="Blues">Blues</option>
+                    <option value="Classique">Classique</option>
+                    <option value="Hip-Hop">Hip-Hop</option>
+                    <option value="Electro">Electro</option>
+                    <option value="Reggae">Reggae</option>
+                    <option value="Metal">Metal</option>
+                    <option value="Soul">Soul</option>
+                    <option value="Funk">Funk</option>
+                    <option value="Country">Country</option>
+                    <option value="R&B">R&B</option>
+                    <option value="Disco">Disco</option>
+                    <option value="Folk">Folk</option>
+                    <option value="Punk">Punk</option>
+                    <option value="Alternative">Alternative</option>
+                    <option value="Indie">Indie</option>
+                    <option value="Autre">Autre</option>
+                </select>
+                <button onclick="clearFilters()"
+                    style="padding: 12px 20px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    ✖ Effacer
+                </button>
+            </div>
+        </div>
+
+        <h2 style="color: white; margin-bottom: 20px;">🛍️ Annonces des autres utilisateurs</h2>
+        <div class="annonces-grid" id="annonces-grid">
+            <div style="color: white; text-align: center; grid-column: 1/-1;">
+                Chargement des annonces...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const username = localStorage.getItem('username');
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
+
+        let allAnnonces = []; // Stocker toutes les annonces pour le filtrage
+
+        // Vérifier que l'utilisateur est connecté ET que le token est valide
+        async function checkAuth() {
+            if (!username || !userId || !token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+
+            // Vérifier la validité du token auprès du serveur
+            try {
+                const response = await fetch('/api/annonces', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    // Serveur inaccessible, token invalide ou expiré
+                    localStorage.clear();
+                    window.location.href = '/login.html';
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                // Erreur réseau = serveur éteint, on déconnecte
+                console.error('Serveur inaccessible:', error);
+                localStorage.clear();
+                window.location.href = '/login.html';
+                return false;
+            }
+        }
+
+        // Charger le nombre de notifications non lues
+        async function loadNotificationCount() {
+            try {
+                const response = await fetch(`/api/notifications/user/${userId}/unread/count`);
+                const count = await response.json();
+
+                const badge = document.getElementById('notif-badge');
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erreur chargement notifications:', error);
+            }
+        }
+
+        // Initialisation
+        (async function () {
+            if (await checkAuth()) {
+                document.getElementById('user-info').textContent = `Bonjour, ${username}!`;
+                loadAnnonces();
+                loadNotificationCount();
+
+                // Rafraîchir le badge toutes les 30 secondes
+                setInterval(loadNotificationCount, 30000);
+            }
+        })();
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        async function loadAnnonces() {
+            try {
+                const response = await fetch('/api/annonces');
+                const data = await response.json();
+
+                let annonces = Array.isArray(data) ? data : (data.annonces || []);
+
+                // Filtrer pour afficher uniquement les annonces des autres utilisateurs
+                allAnnonces = annonces.filter(annonce => annonce.vendeurId != userId);
+
+                displayAnnonces(allAnnonces);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('annonces-grid').innerHTML =
+                    '<div style="color: white; text-align: center; grid-column: 1/-1;">Erreur lors du chargement.</div>';
+            }
+        }
+
+        function displayAnnonces(annonces) {
+            const grid = document.getElementById('annonces-grid');
+
+            if (annonces.length === 0) {
+                grid.innerHTML = '<div style="color: white; text-align: center; grid-column: 1/-1;">Aucune annonce trouvée.</div>';
+                return;
+            }
+
+            grid.innerHTML = annonces.map(annonce => `
+                <div class="annonce-card" onclick="goToAnnonce(${annonce.id})">
+                    ${annonce.imageUrl ? `<img src="${annonce.imageUrl}" alt="${annonce.titre}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">` : ''}
+                    <h3>${annonce.titre}</h3>
+                    <p><strong>Artiste:</strong> ${annonce.artiste}</p>
+                    <p><strong>Genre:</strong> ${annonce.genre || 'Non spécifié'}</p>
+                    <p><strong>État:</strong> ${annonce.etat}</p>
+                    <div class="price">${annonce.prix.toFixed(2)} €</div>
+                </div>
+            `).join('');
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                applyFilters();
+            }
+        }
+
+        function handleFilterChange() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchText = document.getElementById('search-input').value.toLowerCase().trim();
+            const genreFilter = document.getElementById('genre-filter').value;
+
+            let filtered = allAnnonces;
+
+            // Filtrer par texte de recherche (titre ou artiste)
+            if (searchText) {
+                filtered = filtered.filter(annonce =>
+                    annonce.titre.toLowerCase().includes(searchText) ||
+                    annonce.artiste.toLowerCase().includes(searchText)
+                );
+            }
+
+            // Filtrer par genre
+            if (genreFilter) {
+                filtered = filtered.filter(annonce => annonce.genre === genreFilter);
+            }
+
+            displayAnnonces(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('genre-filter').value = '';
+            displayAnnonces(allAnnonces);
+        }
+
+        function goToAnnonce(id) {
+            window.location.href = `/annonce.html?id=${id}`;
+        }
+    </script>
+</body>
+
+</html>

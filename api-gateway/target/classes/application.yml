@@ -1,0 +1,123 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      # Découverte automatique des services via Eureka
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      
+      # Configuration des routes
+      routes:
+        # Route vers user-service
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**, /api/users/**, /api/annonces/**, /api/admin/**, /api/messages/**, /api/notifications/**, /api/reviews/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-service-cb
+                fallbackUri: forward:/fallback/user-service
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+
+        # Route vers transaction-service
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/transactions/**, /api/offres/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: transaction-service-cb
+                fallbackUri: forward:/fallback/transaction-service
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                methods: GET,POST,PUT,DELETE
+
+      # Configuration globale CORS
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: false
+
+# Configuration Eureka Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+# Configuration Resilience4j
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+      
+      transaction-service-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+  timelimiter:
+    instances:
+      user-service-cb:
+        timeoutDuration: 5s
+      transaction-service-cb:
+        timeoutDuration: 5s
+
+# Configuration Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,gateway,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logs
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    io.github.resilience4j: DEBUG

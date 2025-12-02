@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Utilisateur - Magasin2Disque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #e0e7ff;
+            color: #667eea;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .profile-info h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .profile-meta {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .rating-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .rating-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .rating-box .label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .rating-box .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 24px;
+        }
+
+        .reviews-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .reviews-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .review-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .review-date {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .review-stars {
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+
+        .review-comment {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .annonces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .annonce-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .annonce-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .annonce-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .annonce-card h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #667eea;">👤 Profil Utilisateur</h1>
+            <a href="/index.html" class="btn btn-secondary">← Retour</a>
+        </div>
+
+        <div id="loading" class="loading">Chargement du profil...</div>
+
+        <div id="profile-content" style="display: none;">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="avatar"></div>
+                    <div class="profile-info">
+                        <h1 id="username"></h1>
+                        <div class="profile-meta">
+                            <p id="member-since"></p>
+                        </div>
+                        <div id="contact-button-container" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+
+                <div class="rating-summary">
+                    <div class="rating-box">
+                        <div class="label">Note Moyenne</div>
+                        <div class="value" id="avg-rating">0.0</div>
+                        <div class="stars" id="avg-stars"></div>
+                    </div>
+                    <div class="rating-box">
+                        <div class="label">Total d'Avis</div>
+                        <div class="value" id="total-reviews">0</div>
+                    </div>
+                    <div class="rating-box">
+                        <div class="label">Annonces Actives</div>
+                        <div class="value" id="active-annonces">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reviews-section">
+                <h2>⭐ Avis Reçus</h2>
+                <div id="reviews-container"></div>
+            </div>
+
+            <div class="reviews-section" style="margin-top: 30px;">
+                <h2>📋 Annonces de cet utilisateur</h2>
+                <div id="annonces-container" class="annonces-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+        const currentUserId = localStorage.getItem('userId');
+
+        if (!userId) {
+            alert('Utilisateur non spécifié');
+            window.location.href = '/index.html';
+        }
+
+        async function loadProfile() {
+            try {
+                // Charger les infos utilisateur
+                const userResponse = await fetch(`/api/users/${userId}`);
+                const user = await userResponse.json();
+
+                // Charger les avis
+                const reviewsResponse = await fetch(`/api/reviews/user/${userId}`);
+                const reviewsData = await reviewsResponse.json();
+
+                // Charger les annonces
+                const annoncesResponse = await fetch('/api/annonces');
+                const allAnnonces = await annoncesResponse.json();
+                const userAnnonces = (Array.isArray(allAnnonces) ? allAnnonces : allAnnonces.annonces || [])
+                    .filter(a => a.vendeurId == userId && a.disponible);
+
+                displayProfile(user, reviewsData, userAnnonces);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('profile-content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('loading').innerHTML = '<div class="empty-state">❌ Erreur de chargement</div>';
+            }
+        }
+
+        function displayProfile(user, reviewsData, annonces) {
+            // Avatar (première lettre du username)
+            document.getElementById('avatar').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('username').textContent = user.username;
+
+            // Note moyenne
+            const avgRating = reviewsData.averageRating || 0;
+            document.getElementById('avg-rating').textContent = avgRating.toFixed(1);
+            document.getElementById('avg-stars').innerHTML = getStars(avgRating);
+
+            // Total avis
+            document.getElementById('total-reviews').textContent = reviewsData.totalReviews || 0;
+
+            // Annonces actives
+            document.getElementById('active-annonces').textContent = annonces.length;
+
+            // Ajouter bouton de contact si ce n'est pas le profil de l'utilisateur actuel
+            if (userId != currentUserId) {
+                document.getElementById('contact-button-container').innerHTML = `
+                    <button class="btn btn-primary" onclick="contacterUtilisateur(${userId})" 
+                            style="padding: 12px 30px; font-size: 16px;">
+                        💬 Envoyer un message
+                    </button>
+                `;
+            }
+
+            // Afficher les avis
+            displayReviews(reviewsData.reviews);
+
+            // Afficher les annonces
+            displayAnnonces(annonces);
+        }
+        
+        // Fonction pour contacter l'utilisateur
+        function contacterUtilisateur(targetUserId) {
+            window.location.href = `/messages.html?userId=${targetUserId}`;
+        }
+
+        function getStars(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+            const emptyStars = 5 - fullStars - halfStar;
+
+            let stars = '★'.repeat(fullStars);
+            if (halfStar) stars += '☆';
+            stars += '☆'.repeat(emptyStars);
+
+            return stars;
+        }
+
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucun avis pour le moment</div>';
+                return;
+            }
+
+            container.innerHTML = reviews.map(review => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="reviewer-name">👤 ${review.reviewerUsername}</span>
+                        <span class="review-date">${formatDate(review.createdAt)}</span>
+                    </div>
+                    <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                    ${review.comment ? `<div class="review-comment">"${review.comment}"</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function displayAnnonces(annonces) {
+            const container = document.getElementById('annonces-container');
+
+            if (annonces.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucune annonce active</div>';
+                return;
+            }
+
+            container.innerHTML = annonces.map(annonce => `
+                <div class="annonce-card" onclick="window.location.href='/annonce.html?id=${annonce.id}'">
+                    ${annonce.imageUrl ? `<img src="${annonce.imageUrl}" alt="${annonce.titre}">` : ''}
+                    <h3>${annonce.titre}</h3>
+                    <p style="color: #666; font-size: 14px; margin: 5px 0;">${annonce.artiste}</p>
+                    <div class="price">${annonce.prix.toFixed(2)} €</div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        loadProfile();
+    </script>
+</body>
+
+</html>
