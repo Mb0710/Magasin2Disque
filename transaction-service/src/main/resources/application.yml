@@ -43,10 +43,40 @@ actor:
       strategy: restart
       max-retries: 3
 
-# Configuration Feign clients
+# Configuration Feign clients avec Circuit Breaker
 feign:
+  circuitbreaker:
+    enabled: true
   client:
     config:
-      user-service:
+      default:
         connectTimeout: 5000
         readTimeout: 5000
+        loggerLevel: basic
+
+# Configuration Resilience4j Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  
+  retry:
+    instances:
+      user-service:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+  
+  timelimiter:
+    instances:
+      user-service:
+        timeoutDuration: 3s
