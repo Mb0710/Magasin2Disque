@@ -339,7 +339,7 @@
             successMsg.style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:8080/api/transactions/acheter', {
+                const response = await fetch('http://localhost:8082/api/transactions/acheter', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -404,7 +404,7 @@
             successMsg.style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:8080/api/offres', {
+                const response = await fetch('http://localhost:8082/api/offres', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

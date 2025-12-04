@@ -15,11 +15,22 @@ spring:
       
       # Configuration des routes
       routes:
+        # Route pour les uploads (images)
+        - id: uploads
+          uri: lb://user-service
+          predicates:
+            - Path=/uploads/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-service-cb
+                fallbackUri: forward:/fallback/user-service
+        
         # Route vers user-service
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/api/auth/**, /api/users/**, /api/annonces/**, /api/admin/**, /api/messages/**, /api/notifications/**, /api/reviews/**
+            - Path=/api/auth/**, /api/users/**, /api/annonces/**, /api/admin/**, /api/messages/**, /api/notifications/**, /api/reviews/**, /api/uploads/**
           filters:
             - name: CircuitBreaker
               args:
