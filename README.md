@@ -221,8 +221,6 @@ magasin-2-disque/
 ├── user-service/           # Gestion utilisateurs
 ├── transaction-service/    # Gestion transactions
 ├── lib-repo/              # Dépendances locales (Actor Framework)
-├── start-services.py      # Script de lancement universel
-├── start-services.sh      # Script Bash
 ├── start-services.ps1     # Script PowerShell
 └── pom.xml               # POM parent
 ```
@@ -239,3 +237,4 @@ Développé par l'équipe SAF
 
 
 **Happy Coding! 🎵🎶**
+
