@@ -227,14 +227,15 @@ magasin-2-disque/
 
 ## 📝 License
 
-Ce projet est sous licence MIT.
+Ce projet est sous licence Magasin2Disques.
 
 ## 👨‍💻 Auteurs
 
-Développé par l'équipe SAF
+Développé par l'équipe Magasin2Disques.
 
 ---
 
 
 **Happy Coding! 🎵🎶**
+
 
