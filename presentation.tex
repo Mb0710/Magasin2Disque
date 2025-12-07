@@ -1,0 +1,430 @@
+\documentclass{beamer}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz} % Indispensable pour les dégradés
+
+% --- Thème et Couleurs ---
+\usetheme{Madrid}
+
+% 1. Définition des couleurs
+\definecolor{myBlue}{RGB}{20, 40, 160}   % Bleu profond
+\definecolor{myViolet}{RGB}{140, 20, 160} % Violet
+
+% 2. Configuration de base
+\usecolortheme{whale}
+\setbeamercolor{structure}{fg=myBlue}
+\setbeamercolor{title}{fg=white} % Texte du titre en blanc
+\setbeamercolor{frametitle}{fg=white}
+
+% --- CUSTOMISATION 1 : BARRE DE TITRE DES SLIDES ---
+\setbeamertemplate{frametitle}{
+    \nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,ht=1.2cm]{frametitle}
+        \begin{tikzpicture}[remember picture, overlay]
+            \shade[left color=myBlue, right color=myViolet, shading angle=45] 
+            (0,0) rectangle (\paperwidth,1.2cm);
+            \node[anchor=west, white, font=\large\bfseries] at (0.5,0.61) {\insertframetitle};
+        \end{tikzpicture}
+    \end{beamercolorbox}
+}
+
+% --- CUSTOMISATION 2 : PAGE DE TITRE (Titre + Sous-titre en dégradé) ---
+\setbeamertemplate{title page}{
+    \vspace{1cm} % Marge haut
+    \centering
+    
+    % Boîte dégradée pour le TITRE et SOUS-TITRE
+    \begin{tikzpicture}
+        \node[
+            shade, left color=myBlue, right color=myViolet, shading angle=45, % Le dégradé
+            text width=0.9\paperwidth, % Largeur de la boite
+            inner sep=10pt, % Espace intérieur
+            rounded corners=5pt, % Bords arrondis
+            align=center,
+            text=white % Couleur du texte
+        ] 
+        {
+            \LARGE \bfseries \inserttitle \\[0.5em] 
+            \large \insertsubtitle
+        };
+    \end{tikzpicture}
+    
+    \vspace{1cm}
+    
+    % Auteurs (Liste des membres)
+    {\usebeamerfont{author}\insertauthor} \par
+    \vspace{0.5cm}
+    
+    % Institution (École et Groupe)
+    {\usebeamerfont{institute}\insertinstitute} \par
+    \vspace{1cm}
+    
+    % Date
+    {\usebeamerfont{date}\insertdate} \par
+    \vspace{0.5cm}
+}
+
+% --- CUSTOMISATION 3 : BLOCS (Header en dégradé) ---
+\setbeamertemplate{block begin}{
+    \par\vskip\medskipamount
+    % Le header du bloc avec dégradé
+    \begin{tikzpicture}
+        \node[
+            shade, left color=myBlue, right color=myViolet, shading angle=45,
+            text width=\linewidth-10pt, % Ajustement largeur
+            inner sep=5pt,
+            rounded corners=2pt,
+            text=white,
+            font=\bfseries
+        ] (box) {\insertblocktitle};
+    \end{tikzpicture}
+    \par
+    % Le corps du bloc (gris clair standard)
+    \usebeamerfont{block body}
+    \begin{beamercolorbox}[vmode, colsep*=.75ex]{block body}
+}
+
+\setbeamertemplate{block end}{
+    \end{beamercolorbox}
+    \vskip\smallskipamount
+}
+
+
+% --- Méta-données (MISES À JOUR ICI) ---
+\title[Framework Actor]{Projet de framework d'acteurs coopérant via microservices }
+\subtitle{Application : Marketplace de Vinyles "Magasin2Disque"}
+
+% Noms des membres
+\author[Groupe 4]{
+    BENLAIFAOUI Mohamed \\ 
+    LAID Yanis \\ 
+    MOUCHARD Damien \\ 
+    SOUSSA Wassim
+}
+
+% École et Groupe
+\institute[CY Tech]{
+    CY Tech \\
+    ING2 GSI groupe 4
+}
+
+% Date mise à jour
+\date{9 décembre 2025}
+
+\begin{document}
+
+% --- Slide de Titre ---
+\begin{frame}
+    \titlepage 
+\end{frame}
+
+% --- Plan ---
+\begin{frame}{Sommaire}
+    \tableofcontents
+\end{frame}
+
+% ==========================================
+% PARTIE 1 : CONTEXTE ET OBJECTIFS
+% ==========================================
+\section{Contexte et Objectifs}
+
+\begin{frame}{Objectifs du Projet}
+    \begin{block}{Le Besoin}
+        Développer un framework inspiré d'\textbf{Akka} permettant la coopération d'entités autonomes (acteurs) au sein d'une architecture microservices \textbf{Spring Boot}.
+    \end{block}
+
+    \vspace{0.5cm}
+    
+    \textbf{Les 3 Piliers du Système :}
+    \begin{itemize}
+        \setlength\itemsep{0.5em}
+        \item \textbf{Résilience :} Tolérance aux pannes grâce à la supervision hiérarchique.
+        \item \textbf{Élasticité :} Adaptation dynamique à la charge.
+        \item \textbf{Communication :} Échanges asynchrones (messages).
+    \end{itemize}
+\end{frame}
+
+% ==========================================
+% PARTIE 2 : ARCHITECTURE
+% ==========================================
+\section{Architecture du Framework}
+
+\begin{frame}{Architecture générale}
+    
+    \begin{block}{Démarche Technique}
+        Afin de comprendre le fonctionnement interne de notre solution, nous allons explorer l'architecture à travers \textbf{6 vues techniques} successives, allant de la vision globale aux mécanismes de résilience.
+    \end{block}
+
+    \vspace{0.5cm}
+
+    \begin{enumerate}
+        \setlength\itemsep{1em} % Espacement entre les points
+        \item \textbf{Vue d'ensemble :} Interaction globale des composants (Front, Gateway, Registry).
+        \item \textbf{Cœur du Système :} Architecture interne du \textit{Framework Actor} (Système, Scheduler, EventBus).
+        \item \textbf{Point d'Entrée (Gateway) :} Gestion du routage dynamique et de la sécurité.
+        \item \textbf{Communication Inter-Services :} Le pattern Proxy avec OpenFeign.
+        \item \textbf{Résilience :} Tolérance aux pannes via le pattern \textit{Circuit Breaker}.
+        \item \textbf{Persistance :} Ségrégation des données (\textit{Database per Service}) avec JPA.
+    \end{enumerate}
+
+\end{frame}
+
+\begin{frame}{1. Vue d'ensemble de l'Architecture}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{1Vue d'ensemble de l'Architecture PRESENTATION.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{2. API Gateway}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{4API Gateway PRESENTATION.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{3. OpenFeign}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{5OpenFeignPRESENTATION.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{4. Resilience4j}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{6Resilience4j (Circuit Breaker)PRESENTATION.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{5. Spring Data JPA et PostgreSQL}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{8Spring Data JPA_PostgreSQLpresentation.jpg}
+    \end{figure}
+\end{frame}
+
+% CORRECTION DE L'ERREUR CRITIQUE ICI (double accolade {{ retirée)
+\begin{frame}{Architecture du Framework}
+    
+    \begin{alertblock}{La Problématique}
+        Comment gérer la concurrence et l'état interne des services sans utiliser les blocages complexes des Threads Java classiques ?
+    \end{alertblock}
+
+    \vspace{0.8cm}
+
+    \textbf{Notre Solution : Une implémentation du modèle Actor}
+    
+    Nous avons développé notre propre moteur inspiré d'Akka. Nous allons maintenant détailler son fonctionnement en 3 étapes clés :
+
+    \vspace{0.5cm}
+
+    \begin{itemize}
+        \setlength\itemsep{1em}
+        \item[\textbf{1.}] \textbf{L'Orchestration :} Comment l'\textit{ActorSystem} gère l'univers des acteurs.
+        \item[\textbf{2.}] \textbf{L'Isolation :} Le couple \textit{Actor / ActorRef} pour l'asynchronisme total.
+        \item[\textbf{3.}] \textbf{L'Auto-Réparation :} La hiérarchie de \textit{Supervision} pour la résilience.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{1. Vue d'ensemble de l'Architecture}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{1Architecture générale FE.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{2. Composants principaux : ActorSystem}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{ActorSystem FE.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{2. Composants principaux : Actor}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{Actor(interface) FE.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{3. Composants principaux : ActorRef}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{ActorRef(interface)FE.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{4. Composants principaux : Supervision Strategy}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{SupervisionStrategy(interface)FE.jpg}
+    \end{figure}
+\end{frame}
+
+
+
+% ==========================================
+% PARTIE 3 : SCÉNARIO (Images)
+% ==========================================
+\section{Démonstration}
+
+\begin{frame}{Scénario : Alice vend l'album "Abbey Road" à Bob}
+    \begin{enumerate}
+        \item Alice s'inscrit et se connecte.
+        \item Alice crée une annonce pour vendre "Abbey Road" des Beatles à 25€.
+        \item Bob consulte les annonces et voit celle d'Alice.
+        \item Bob fait une offre de 20€.
+        \item Alice reçoit une notification 
+        \item Elle accepte l'offre.  Une transaction est créée automatiquement.
+        \item Alice envoie le disque et confirme la livraison.
+        \item Bob reçoit le disque et confirme la réception.$\rightarrow$  La transaction est marquée comme "DELIVERED".
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{1. Interface de Création de compte}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{page_création_compte.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{2. Interface de Connexion}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{page_connexion.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{3. Création de l'annonce}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{creation_annonce.png}
+        \caption{Formulaire géré par \texttt{AnnonceActor}.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{4. Page d'accueil}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{page_accueil.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{5. Page de chat}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{conversation_avec_autre_user.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{6. Page de notifications}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{page_notif.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{7. Page de Transaction }
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{page_transaction.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{8.a. Confirmation pour Alice }
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{mail_confirmation.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{8.b. Confirmation pour Bob }
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{mail_confirmation2.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{1/3 Dashboard admin : Gestion des utilisateurs}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{gestion_utilisateur.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{2/3 Dashboard admin : Gestion des utilisateurs}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{gestion_utilisateur2.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{3/3 Dashboard admin : Gestion des annonces}
+    \begin{figure}
+        \centering
+        \includegraphics[height=0.75\textheight, keepaspectratio]{gestion_annonce.png}
+        \caption{L'état passe à "DELIVERED".}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Stack Technologique}
+    \begin{table}
+        \centering
+        \footnotesize % Réduction de la taille pour que tout rentre
+        \setlength{\tabcolsep}{8pt} % Espacement horizontal entre les colonnes
+        \renewcommand{\arraystretch}{1.2} % Espacement vertical entre les lignes
+        
+        \begin{tabular}{lll}
+            \toprule
+            \textbf{Technologie} & \textbf{Rôle} & \textbf{Avantage Principal} \\
+            \midrule
+            \textbf{Spring Boot} & Framework backend & Configuration automatique \\
+            \textbf{Spring Cloud} & Microservices & Ecosystème complet \\
+            \textbf{Eureka} & Service Discovery & Auto-enregistrement \\
+            \textbf{API Gateway} & Point d'entrée & Routage dynamique \\
+            \textbf{OpenFeign} & HTTP Client & Simplicité d'utilisation \\
+            \textbf{Resilience4j} & Circuit Breaker & Résilience \\
+            \textbf{Spring Security} & Sécurité & Protection endpoints \\
+            \textbf{JWT} & Authentification & Stateless \\
+            \textbf{Spring Data JPA} & ORM & Abstraction DB \\
+            \textbf{PostgreSQL} & Base de données & Fiabilité \\
+            \textbf{Actor Framework} & Messaging & Asynchrone \\
+            \textbf{Vanilla JS} & Frontend & Léger et rapide \\
+            \bottomrule
+        \end{tabular}
+        \caption{Résumé des technologies employées}
+    \end{table}
+\end{frame}
+
+% ==========================================
+% CONCLUSION
+% ==========================================
+\section{Conclusion}
+
+\begin{frame}{Bilan du Projet}
+    \begin{block}{Réalisations}
+        \begin{itemize}
+            \item Framework Actor fonctionnel.
+            \item Architecture microservices découplée.
+            \item Résilience et isolation des pannes.
+        \end{itemize}
+    \end{block}
+    
+    \vspace{1cm}
+    \centering
+    \Large \textbf{Merci de votre attention !}
+\end{frame}
+
+\end{document}
